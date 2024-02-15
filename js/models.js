@@ -22,10 +22,10 @@ class Story {
   }
 
   /** Parses hostname out of URL and returns it. */
+    // reference: https://developer.mozilla.org/en-US/docs/Web/API/URL
 
   getHostName() {
-    // FIXME: complete this function!
-    return "hostname.com";
+    return new URL(this.url).host;
   }
 }
 
@@ -67,14 +67,33 @@ class StoryList {
   }
 
   /** Adds story data to API, makes a Story instance, adds it to story list.
-   * - user - the current instance of User who will post the story
-   * - obj of {title, author, url}
+   * - currentUser - the current instance of User who will post the story
+   * - newStory - obj of {title, author, url}
    *
    * Returns the new Story instance
    */
 
-  async addStory( /* user, newStory */) {
-    // UNIMPLEMENTED: complete this function!
+  async addStory(currentUser, newStory) {
+    // retrieve token by calling on currentUser.loginToken
+    const userToken = currentUser.loginToken;
+
+    // pass newStory info into the API using token & retrieve response from API
+    const response = await fetch(`${BASE_URL}/stories`, {
+      method: "POST",
+      body: JSON.stringify({token: userToken,
+            story: {author: newStory.author, title: newStory.title, url: newStory.url}}),
+      headers: {"Content-Type": "application/json"},
+    });
+    const data = await response.json();
+
+    //pass response into a new instance of Story class
+    const story = new Story(data.story);
+
+    // add story to stories list
+    this.stories.unshift(story);
+
+    // return new instance
+    return story;
   }
 }
 
