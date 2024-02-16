@@ -50,3 +50,29 @@ function putStoriesOnPage() {
 
   $allStoriesList.show();
 }
+
+
+/** Using data from new story submit form, retrieve story data from server
+ * and add new story to the page
+ */
+
+async function submitAndShowNewStory(evt) {
+  evt.preventDefault();
+
+  // get the data from the form
+  const author = $("#author-input").val();
+  const title = $("#title-input").val();
+  const url = $("#url-input").val();
+  const newStory = { author, title, url };
+
+  const story = await storyList.addStory(currentUser, newStory);
+
+  const $story = generateStoryMarkup(story);
+  $allStoriesList.prepend($story);
+
+  // reference: https://stackoverflow.com/questions/16452699/how-to-reset-a-form-using-jquery-with-reset-method
+  $submitStoryForm.trigger("reset");
+}
+
+$submitStoryForm.on("submit", submitAndShowNewStory);
+
