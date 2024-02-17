@@ -20,11 +20,11 @@ async function getAndShowStoriesOnStart() {
  */
 
 function generateStoryMarkup(story) {
-  // console.debug("generateStoryMarkup", story);
-
   const hostName = story.getHostName();
+
   return $(`
       <li id="${story.storyId}">
+        ${generateStarHTML(story)}
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
@@ -33,6 +33,22 @@ function generateStoryMarkup(story) {
         <small class="story-user">posted by ${story.username}</small>
       </li>
     `);
+}
+
+/** When user is logged in, generates favorite icon next to story according to user's favorites;
+ * If user is logged out, no favorite icon appears next to stories
+*/
+
+function generateStarHTML(story) {
+  if (currentUser) {
+    const starClass = currentUser.isFavorite(story) ? "bi-star-fill" : "bi-star";
+    return (
+      `<span class="star">
+        <i class="bi ${starClass}"></i>
+      </span>`);
+  } else {
+    return "";
+  }
 }
 
 /** Gets list of stories from server, generates their HTML, and puts on page. */
@@ -50,7 +66,6 @@ function putStoriesOnPage() {
 
   $allStoriesList.show();
 }
-
 
 /** Using data from new story submit form, retrieve story data from server
  * and add new story to the page
@@ -76,3 +91,41 @@ async function submitAndShowNewStory(evt) {
 
 $submitStoryForm.on("submit", submitAndShowNewStory);
 
+/** when star on  allStoriesList is clicked, user.addFavorite(story) & add to $favoritedStories
+ * ... if star is already selected and user un-selects it user.removeFavorite(story) & remove from $favoritedStories
+*/
+
+// TODO: look into toggle class and functionality
+// resource: https://www.geeksforgeeks.org/how-to-toggle-between-two-classes-in-jquery/
+// $().toggleClass("bi-star bi-star-fill")
+
+async function selectAndUnselectFavoriteStory(evt) {
+  evt.preventDefault();
+
+  const $starIcon = $(evt.target);
+  const starStoryId = $starIcon.closest("li").attr("id");
+  const story = await Story.getStory(starStoryId);
+
+  if ($starIcon.hasClass("bi-star")) {
+    $starIcon.removeClass("bi-star").addClass("bi-star-fill");
+    await currentUser.addFavorite(story);
+  } else {
+    $starIcon.removeClass("bi-star-fill").addClass("bi-star");
+    await currentUser.removeFavorite(story);
+  }
+}
+
+$storiesLists.on("click", ".star", selectAndUnselectFavoriteStory);
+
+/** displays all favorited stories in the "favorites" page */
+
+function displayFavoritedStories() {
+  $favoritedStories.empty();
+
+  currentUser.favorites.forEach(s => {
+    const $story = generateStoryMarkup(s);
+    $favoritedStories.append($story);
+  });
+
+  $favoritedStories.show();
+}

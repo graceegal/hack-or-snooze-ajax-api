@@ -103,7 +103,7 @@ function saveUserCredentialsInLocalStorage() {
 
 /** When a user signs up or registers, we want to set up the UI for them:
  *
- * - show the stories list
+ * - show the stories list with favorite icons
  * - update nav bar options for logged-in user
  * - generate the user profile part of the page
  */
@@ -114,4 +114,5 @@ function updateUIOnUserLogin() {
   $allStoriesList.show();
   $(".account-forms-container").hide();
   updateNavOnLogin();
+  putStoriesOnPage();
 }

@@ -27,6 +27,15 @@ class Story {
   getHostName() {
     return new URL(this.url).host;
   }
+
+  /** retrieve a story with passing in story ID */
+
+  static async getStory(storyId) {
+    const story = await fetch(`${BASE_URL}/stories/${storyId}`);
+    const data = await story.json();
+    return new Story(data.story);
+  }
+
 }
 
 
@@ -88,9 +97,7 @@ class StoryList {
     const data = await response.json();
 
     const story = new Story(data.story);
-
     this.stories.unshift(story);
-
     return story;
   }
 }
@@ -216,5 +223,54 @@ class User {
       console.error("loginViaStoredCredentials failed", err);
       return null;
     }
+  }
+
+  /** favorite stories - when favorited, add to user's favorite list in user
+   * instance and inform server  */
+
+  async addFavorite(story) {
+    this.favorites.push(story);
+
+    // update API
+    const token = this.loginToken;
+    await fetch(`${BASE_URL}/users/${this.username}/favorites/${story.storyId}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ token }),
+        headers: { "Content-Type": "application/json" },
+      });
+  }
+
+  /** unfavorite stories- when unfavorited, remove from user's favorite list in
+   * user instance and inform server */
+
+  async removeFavorite(story) {
+    this.favorites = this.favorites.filter(s => s.storyId !== story.storyId);
+
+    //update API
+    const token = this.loginToken;
+    await fetch(`${BASE_URL}/users/${this.username}/favorites/${story.storyId}`,
+      {
+        method: "DELETE",
+        body: JSON.stringify({ token }),
+        headers: { "Content-Type": "application/json" },
+      });
+  }
+
+  /** checks to see if story is in user's favorites - returns true or false */
+
+  // FIXME: update name to be more descriptive
+  isFavorite(story) {
+    for (let s of this.favorites) {
+      if (s.storyId === story.storyId) {
+        return true;
+      }
+    }
+    return false;
+
+    // Alternative solution:
+    // return this.favorites.some(s => {
+    //   return s.storyId === story.storyId;
+    // });
   }
 }

@@ -41,7 +41,19 @@ function updateNavOnLogin() {
 
 function navSubmitClick(evt) {
   evt.preventDefault();
+  hidePageComponents();
   $submitStoryForm.show();
+  putStoriesOnPage();
 }
 
 $navSubmit.on("click", navSubmitClick);
+
+/** Show favorites stories list on click on navbar "favorites" */
+
+function navFavoritesClick(evt) {
+  evt.preventDefault();
+  hidePageComponents();
+  displayFavoritedStories();
+}
+
+$navFavorites.on("click", navFavoritesClick);
